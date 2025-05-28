@@ -9,3 +9,9 @@ dependencies = [
     "polars>=1.29.0",
     "streamlit>=1.45.1",
 ]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "watchdog>=6.0.0",
+]
