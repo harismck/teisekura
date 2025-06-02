@@ -24,7 +24,8 @@ def load_data(until):
 def load_and_preprocess_data(until):
     df = load_data(until)
     df = (
-        df.with_columns(
+        df.filter(pl.col("isigalioja") >= "2014-01-01")
+        .with_columns(
             pl.coalesce(pl.col("isigalioja"), pl.col("isigalioja_po_salygu"))
             .str.strptime(pl.Date, "%Y-%m-%d", strict=False)
             .alias("isigalioja"),
