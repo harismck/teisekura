@@ -5,7 +5,7 @@ import polars as pl
 import streamlit as st
 
 from utils import aggregate_by_period, load_and_preprocess_data
-from plots import plot_yearly, plot_quarterly
+from plots import plot_yearly, plot_quarterly, plot_yearly_cumulative
 
 st.set_page_config(layout="wide", page_title="Teisėkūra", page_icon="📄")
 
@@ -59,21 +59,6 @@ negalioja_mean = df_yearly["negalioja_count"].mean()
 
 yearly_plot_cols = st.columns([2, 5, 5])
 
-with yearly_plot_cols[1]:
-    fig, isigalioja_mean = plot_yearly(
-        df_yearly, "isigalioja_count", "Įsigaliojusių įstatymų skaičius"
-    )
-    st.plotly_chart(fig)
-
-with yearly_plot_cols[2]:
-    fig, negalioja_mean = plot_yearly(
-        df_yearly,
-        "negalioja_count",
-        "Nustojusių galioti įstatymų skaičius",
-        color="red",
-    )
-    st.plotly_chart(fig)
-
 with yearly_plot_cols[0]:
     st.markdown(
         """
@@ -90,6 +75,16 @@ with yearly_plot_cols[0]:
         label=f"Praėjusiais metais nustojusių galioti įstatymų skaičius",
         value=prev_year["negalioja_count"],
     )
+
+with yearly_plot_cols[1]:
+    fig, means = plot_yearly(df_yearly)
+    st.plotly_chart(fig)
+
+with yearly_plot_cols[2]:
+    fig = plot_yearly_cumulative(
+        df_yearly, "galioja_count", "Galiojančių įstatymų skaičius"
+    )
+    st.plotly_chart(fig)
 
 
 st.divider()

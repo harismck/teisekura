@@ -15,8 +15,8 @@ def load_data(until):
     url = (
         "https://get.data.gov.lt/datasets/gov/lrsk/teises_aktai/Dokumentas/:format/csv?"
     )
-    url += f"priemusi_inst='Lietuvos%20Respublikos%20Seimas'&registracija>='2014-01-01'&isigalioja<='{until}'&rusis='%C4%AEstatymas'"
-    url += "&select(galioj_busena,tar_kodas,registracija,isigalioja,isigalioja_po_salygu,negalioja,negalioja_po_salygu)"
+    url += f"priemusi_inst='Lietuvos%20Respublikos%20Seimas'&isigalioja>='2014-01-01'&isigalioja<='{until}'&rusis='%C4%AEstatymas'"
+    url += "&select(galioj_busena,tar_kodas,registracija,isigalioja,isigalioja_po_salygu,negalioja,negalioja_po_salygu,priimtas)"
 
     return pl.read_csv(url)
 
@@ -24,7 +24,7 @@ def load_data(until):
 def load_and_preprocess_data(until):
     df = load_data(until)
     df = (
-        df.filter(pl.col("isigalioja") >= "2014-01-01")
+        df
         .with_columns(
             pl.coalesce(pl.col("isigalioja"), pl.col("isigalioja_po_salygu"))
             .str.strptime(pl.Date, "%Y-%m-%d", strict=False)
@@ -66,4 +66,10 @@ def aggregate_by_period(df, period):
         .rename({"len": "isigalioja_count", "len_right": "negalioja_count"})
         .fill_null(0)
         .sort("period")
+        .with_columns(
+            (
+                pl.col("isigalioja_count").cum_sum()
+                - pl.col("negalioja_count").cum_sum()
+            ).alias("galioja_count")
+        )
     )
